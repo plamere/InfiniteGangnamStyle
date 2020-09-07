@@ -99,6 +99,7 @@ h2 {
     width:700px;
     margin-left: auto;
     text-align:center;
+    margin-top: 20px;
     margin-bottom: 10px;
     margin-left: 40px;
     font-size: 32px;
@@ -107,6 +108,8 @@ h2 {
 
 #faq {
     width:800px;
+    color:white;
+    font-weight:lighter;
 }
 
 a {
@@ -127,3 +130,4 @@ a:link {text-decoration: none; }
     border-color: #45ada8;
 
 }
+
