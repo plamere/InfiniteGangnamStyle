@@ -1,0 +1,44 @@
+
+#stats {
+    font-size: 2.0em;
+    margin-top: 10px;
+    margin-bottom: 12px;
+    text-align: center;
+    color:#fff;
+}
+
+.big {
+    font-size: 2.0em;
+    /*vertical-align:-15%;*/
+}
+
+
+div#jqt #about {
+    padding: 100px 10px 40px;
+    text-shadow: rgba(0, 0, 0, 0.3) 0px -1px 0;
+    color: #bbb;
+    font-size: 13px;
+    text-align: center;
+    background: #161618;
+}
+
+
+div#jqt #about a {
+    color: #fff;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+#image {
+    margin-top: 0px;
+    text-align:center;
+}
+
+
+#about-info {
+    width: 230px;
+    text-align: left;
+    margin-left:auto;
+    margin-right:auto;
+    margin-bottom: 20px;
+}

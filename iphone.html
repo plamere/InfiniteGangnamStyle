@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Gangn&#8734m Style</title>
+        <style type="text/css" media="screen">@import "themes/css/jqtouch.css";</style>
+        <link rel="stylesheet" href="mstyles.css" type="text/css" media="screen">
+        <script src="src/lib/zepto.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="src/jqtouch.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="jremix.js" type="text/javascript" charset="utf-8"></script>
+        <script src="TRLRVJF13A79B07430.var.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mobile.js" type="text/javascript" charset="utf-8"></script>
+        <script type="text/javascript" charset="utf-8">
+            var jQT = new $.jQTouch({
+                icon: 'icon.png',
+                addGlossToIcon: false,
+                startupScreen: 'psy-iphone.png',
+                statusBar: 'black'
+            });
+
+            $(function(){
+                init();
+            });
+        </script>
+        <style type="text/css" media="screen">
+            /* Custom Style */
+        </style>
+    </head>
+    <body>
+        <!-- a hack to keep the web app live -->
+        <audio src="silence.mp3" preload autoplay loop></audio> 
+        <!--<audio src="silence.mp3" onended="this.play();" controls="controls" autobuffer></audio> -->
+        <div id="jqt">
+            <div id="start">
+                <div class="toolbar">
+                        <!--<h1><span class='big'>&#8734; </span> Gangnam </h1>-->
+                        <h1>Gangn&#8734m Style</h1>
+                        <a class="button slideup" id="infoButton" href="#about">About</a>
+                </div>
+                <div id='image'>
+                    <img width=320px src='psy-iphone.png'>
+                </div>
+                <div id='stats'>
+                    <span id='stime'> <span id='time'> 00:00:00 </span></span>
+                </div>
+                <button id="go" class="greenButton">Play</button>
+            </div>
+            <div id="about" class="selectable">
+                    <h2>Gangn&#8734m Style</h2>
+                        <p id='about-info'>
+                            Gangn&#8734m Style dynamically creates a never-ending, ever-changing 
+                            version of Psy's Gangnam Style. 
+                        </p>
+
+                        Music by <a href="http://http://www.youtube.com/user/officialpsy">Psy</a></p>
+                        <br>
+
+                        Software by <a href="http://www.MusicMachinery.com">By Paul Lamere</a></p>
+                        <p><a target="_blank" href="http://twitter.com/plamere">@plamere on Twitter</a></p>
+                        Powered by <a href="http://www.echonest.com">The Echo Nest</a></p>
+                        More info on <a href="http://musicmachinery.com/2012/10/28/infinite-gangnam-style/">Music
+                        Machinery</a></p>
+
+                    <p><br><br><a href="#" class="grayButton goback">Close</a></p>
+            </div>
+        </div>
+    </body>
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-3675615-27']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type =
+'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' :
+'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0];
+s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+</html>

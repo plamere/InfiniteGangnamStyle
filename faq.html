@@ -1,0 +1,45 @@
+<html>
+<head>
+<link rel="stylesheet" href="styles.css" type="text/css" media="screen">
+<title>Infinite Gangnam Style</title>
+</head>
+<body>
+<h1>Infinite Gangnam Style -  Frequently Asked Questions </h1>
+
+<div id="faq">
+<ul>
+    <li> <b> What is this? </b> - Infinite Gangnam Style is a web app that dynamically generates
+    an ever changing and never ending version of the song 'Gangnam Style' by Psy.
+    <li> <b> It never stops? </b> - That's right. It will play forever.
+    <li> <b> How does it work? </b> - We use the <a href='http://developer.echonest.com/docs/v4/track.html'>Echo
+    Nest analyzer</a> to break the song into beats. We play the song beat by beat, but at every beat there's a chance
+    that we will jump to a different part of song that happens to sound very similar to the current beat.  For beat similarity
+    we look at pitch, timbre, loudness, duration and the position of the beat within a bar.
+    <li> <b> Are there any ways to control the song? </b> Yes - here are some keys:
+       <ul> 
+         <li> <b> [space] </b> - Start and stop playing the song
+         <li> <b> [left arrow] </b> - Decrement the current play velocity by one
+         <li> <b> [right arrow] </b> - Increment the current play velocity by one
+         <li> <b> [Down arrow] </b> - Sets the current play velocity to zero
+         <li> <b> [control] </b> - freeze on the current beat
+         <li> <b> [shift]  </b> - bounce between the current beat and all of the similar sounding beats. These are the
+         branch points.
+       </ul>
+        
+    <li> <b> What do the colored blocks represent?</b> Each block represents a beat in the song. The colors indicate
+    how likely we are to branch to/from a particular beat. Red blocks have the highest probability, blue are lower
+    and black have zero probability of a branch. The probablility is based upon how many similar neighbors there are
+    to the particular beat.
+    <li> <b> How come this doesn't work in my browser?</b> The app requires the web audio APIs
+    which are currently best supported in Chrome and Safari
+    <li> <b> What does Psy think about this? </b> I don't know. I hope he doesn't mind that we are using his music
+    and images. We hope you check out his <a href="http://www.youtube.com/user/officialpsy">official video</a> and his <a
+    href="http://www.ygfamily.com/artist/Main.asp?LANGDIV=K&ATYPE=2&ARTIDX=15">web site</a> too (but really you probably already have).
+    <li> <b> Who made this?</b> <a href="http://twitter.com/plamere">Paul Lamere</a> at <a
+    href='http://reykjavik.musichackday.org/2012/index.php?page=Main+page'> Music Hack Day Reykyavik</a> on October
+    28, 2012. More info at <a href='http://musicmachinery.com/2012/11/03/infinite-gangnam-style-for-iphone/'> Music
+    Machinery </a>
+</ul>
+</div>
+</body>
+</html>

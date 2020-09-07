@@ -1,0 +1,129 @@
+body {
+    background: #594f4f;
+    width:730px;
+    color: #45ada8;
+    font-family: 'Questrial', sans-serif;
+    margin:0 auto;
+}
+
+
+
+#movie-div {
+    height: 346px;
+    width: 634px;
+    margin-left:50px;
+}
+
+.movie {
+    width: 634px;
+    height: 346px;
+}
+
+
+h2 {
+    margin-left:auto;
+    margin-right:auto;
+    font-size:28px;
+    width:600px;
+}
+
+#stats {
+    width: 720px;
+    margin-bottom:4px;
+}
+
+#sbeats {
+    position:relative;
+    left:10px;
+}
+
+#stime {
+    position:relative;
+    float:right;
+    
+}
+
+
+
+#buttons {
+    margin-left:180px;
+}
+
+#go {
+    text-align:center;
+    margin-left:32px;
+    width:320px;
+    height:30px;
+    -moz-border-radius:15px;
+    -webkit-border-radius:10px;
+     border: 1px solid #ccc;
+     background: #45ada8;
+     border:1px solid #2a7ecd;
+     padding:3px 10px;
+     font-size: 18px;
+     margin-bottom: 10px;
+     color: #594f4f;
+}
+
+#go:hover {
+    background:#9de0ad;
+    border:1px solid #2a7ecd;
+    //color:#fff;
+    -webkit-border-radius:10px;
+    -moz-border-radius:15px;
+}
+
+#info {
+    margin-left: 20px;
+    margin-top: 10px;
+    font-size:10px;
+    height:12px;
+}
+
+#error {
+    margin-left: 20px;
+    margin-top: 10px;
+    font-size:20px;
+    height:12px;
+    width: 700px;
+    text-align:center;
+    color:red;
+}
+
+
+#controls {
+    padding-right:30px;
+}
+
+#title {
+    width:700px;
+    margin-left: auto;
+    text-align:center;
+    margin-bottom: 10px;
+    margin-left: 40px;
+    font-size: 32px;
+    font-weight: bold;
+}
+
+#faq {
+    width:800px;
+}
+
+a {
+    color: #9de0ad;
+    font-weight:bold;
+}
+
+a:link {text-decoration: none; }
+
+#footer {
+    width:720px;
+    margin-top:0px;
+    margin-left:10px;
+    margin-bottom:20px;
+    text-align:center;
+    font-size:12px;
+    border-top:ridge;
+    border-color: #45ada8;
+
+}

@@ -1,0 +1,27 @@
+ - controls:
+ OK - enable NE-Mode
+    - Branch probability
+    - Similarity threshold
+
+
+Interaction:
+    - click - play (default is zero increment)
+    - shift mouse over show routes
+    - shift-click - cycle through sims
+
+Colors:
+    OK - timbre
+    OK - branch probability
+
+Animation:
+    NO - tracking ball
+
+Images:
+    - keyframed to beats
+        - align beats to proper frame
+
+
+Performance:
+    prequeue quanta
+
+Layout

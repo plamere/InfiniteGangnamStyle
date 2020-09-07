@@ -1,0 +1,914 @@
+<head>
+<script type="text/javascript" src="js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" src="jremix.js"></script>
+<script src="js/raphael-min.js" type="text/javascript" charset="utf-8"></script>
+<script src="TRLRVJF13A79B07430.var.js" type="text/javascript" charset="utf-8"></script>
+<link href='http://fonts.googleapis.com/css?family=Questrial' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="styles.css" type="text/css" media="screen">
+<title> Infinite Gangnam Style</title>
+</head>
+
+<body>
+    <div id='title'> <b>Infinite Gangnam Style</b> </div>
+    <div id='movie-div' width="634" height="346"> 
+        <img src="psy.png">
+    </div> 
+    <div id='info'> </div> 
+    <div id='error'> </div> 
+    <div id='buttons'>
+    <button id="go"> Play Infinite Gangnam Style</button>
+    </div>
+    <div id='tiles'></div> 
+    <div id='stats'>
+        <span id='sbeats'> Total Beats: <span id='beats'> 0 </span></span>
+        <span id='stime'> Listen Time: <span id='time'> 00:00:00 </span></span>
+    </div>
+    <div id='footer'>
+        <span id="controls">
+            <input type='checkbox' id='infinite_mode' checked> Infinite Mode </input>
+            <input type='checkbox' id='image_mode' checked> Video</input>
+        </span>
+        <span>
+         Powered by <a href="http://developer.echonest.com">The Echo Nest </a> and 
+        <a href="http://www.youtube.com/user/officialpsy">Psy</a>
+        &nbsp; Read the <a href="faq.html"> FAQ </a> 
+        &nbsp;Check out the <a href='http://musicmachinery.com/2012/11/03/infinite-gangnam-style-for-iphone/'>iPhone Version </a>
+    </div>
+</body>
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-3675615-27']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type =
+'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' :
+'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0];
+s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
+<script type="text/javascript">
+
+var apiKey = 'N6E4NIOVYMTHNDM8J';
+var trackID = 'TRLRVJF13A79B07430';
+var trackTitle = 'Gangnam Style'
+var track_url = trackID + '.mp3'
+
+var remixer;
+var player;
+var driver;
+var track;
+//var W = 1000, H = 340;
+var W = 800, H = 310;
+var margin = 24;
+var paper;
+var tiles = [];
+var selectedTile;
+var mouseOverTile;
+var minRandomBranchChance = .08
+var maxRandomBranchChance = .5
+var randomBranchChanceDelta =.012;
+var curRandomBranchChance = minRandomBranchChance;
+var branchThreshold = 65;
+var MAX_BRANCHES = 8;
+var infiniteMode = true;
+var totalBeats = 0;
+
+
+var shifted = false;
+var controlled = false;
+
+var layout = beatsLayout;
+var colorBySegments = true;
+
+var showImages = true;
+var imagesLoaded = false;
+var psyImage;
+
+// From Crockford, Douglas (2008-12-17). JavaScript: The Good Parts (Kindle Locations 734-736). Yahoo Press.
+
+if (typeof Object.create !== 'function') { 
+    Object.create = function (o) { 
+        var F = function () {};
+        F.prototype = o; 
+        return new F(); 
+    }; 
+}
+
+function info(s) {
+    $("#info").text(s);
+}
+
+function error(s) {
+    $("#error").text(s);
+    $("#error").show();
+}
+
+
+function goBeats() {
+    layout = beatsLayout;
+    createTilePanel('beats');
+}
+
+function stop() {
+    player.stop();
+    player = remixer.getPlayer();
+}
+
+function createTiles(qtype) {
+    var tiles = [];
+    var qlist = track.analysis[qtype];
+    for (var i = 0; i < qlist.length; i++) {
+        tiles.push(createTile(i, qlist[i]));
+    }
+    return tiles;
+}
+
+
+function pad(s, l, c) {
+    var delta = l - s.length;
+    if (delta > 0) {
+        for (var i = 0; i  < delta; i++) {
+            s = c + s;
+        }
+    }
+    return s;
+    
+}
+
+function loadImages() {
+    var offsetSeconds = 6.3;
+    var imagesPerSecond = 10;
+    var imagesPerBeat = 4;
+
+    var loadedCount = 0;
+    var totalImages = tiles.length * imagesPerBeat;
+
+    info("Loading images");
+
+    for (var i = 0; i < tiles.length; i++) {
+        var tile = tiles[i];
+        var start = tile.q.start;
+        var dur = tile.q.duration / imagesPerBeat;
+        tile.images = [];
+        for (var j = 0; j < imagesPerBeat; j++) {
+            var time = start + j  * dur;
+            var imageIndex = Math.round((time + offsetSeconds) * imagesPerSecond);
+            tile.images[j] = new Image();
+            $(tile.images[j]).attr('class', "movie");
+            tile.images[j].onload = function() {
+                if (++loadedCount == totalImages) {
+                    imagesLoaded = true;
+                    info("");
+                } else {
+                    var percent = loadedCount / totalImages;
+                    info("Images loaded " + Math.floor(percent * 100) + "%");
+                }
+            };
+            tile.images[j].src = "images-10fps/frame-" + pad(imageIndex.toString(), 4, '0') + ".jpg";
+        }
+    }
+}
+
+
+function beatsLayout(tiles, W, H) {
+    var xstart = 10;
+    var ystart = 0;
+    var xspace = 3;
+    var yspace = 3;
+
+    for (var i = 0; i < tiles.length; i++) {
+        var tile = tiles[i];
+        if (i % 4 === 0) {
+            xstart += tile.width + xspace / 2;
+        }
+
+        if (i % 32 === 0) {
+            xstart = 10;
+            ystart += tile.height + yspace;
+        }
+        tile.move(xstart, ystart);
+        xstart += tile.width + xspace;
+        if (xstart + tile.width > W) {
+            xstart = 0;
+            ystart += tile.height + yspace;
+        }
+    }
+}
+
+var timbreWeight = 1, pitchWeight = 10, 
+    loudStartWeight = 1, loudMaxWeight = 1, 
+    durationWeight = 100, confidenceWeight = 1;
+
+function get_seg_distances(seg1, seg2) {
+    var timbre = seg_distance(seg1, seg2, 'timbre', true);
+    var pitch = seg_distance(seg1, seg2, 'pitches');
+    var sloudStart = Math.abs(seg1.loudness_start - seg2.loudness_start);
+    var sloudMax = Math.abs(seg1.loudness_max - seg2.loudness_max);
+    var duration = Math.abs(seg1.duration - seg2.duration);
+    var confidence = Math.abs(seg1.confidence - seg2.confidence);
+    var distance = timbre * timbreWeight + pitch * pitchWeight + 
+        sloudStart * loudStartWeight + sloudMax * loudMaxWeight + 
+        duration * durationWeight + confidence * confidenceWeight;
+    return distance;
+}
+
+function calculateNearestNeighbors(type, neighbors, threshold) {
+    for (var qi = 0; qi < track.analysis[type].length; qi++)  {
+        var isLast = qi == track.analysis[type].length - 1;
+        var q1 = track.analysis[type][qi];
+        var distances = [];
+        for (var i = 0; i < track.analysis[type].length; i++) {
+
+            if (i === qi) {
+                continue;
+            }
+
+            var q2 = track.analysis[type][i];
+            var sum = 0;
+            for (var j = 0; j < q1.overlappingSegments.length; j++) {
+                var seg1 = q1.overlappingSegments[j];
+                var distance = 100;
+                if (j < q2.overlappingSegments.length) {
+                    var seg2 = q2.overlappingSegments[j];
+                    // some segments can overlap many quantums,
+                    // we don't want this self segue, so give them a
+                    // high distance
+                    if (seg1.which === seg2.which) {
+                        distance = 100
+                    } else {
+                        distance = get_seg_distances(seg1, seg2);
+                    }
+                } 
+                sum += distance;
+            }
+            var pdistance = q1.indexInParent == q2.indexInParent ? 0 : 100;
+            var totalDistance = sum / q1.overlappingSegments.length + pdistance;
+            if (totalDistance < threshold) {
+                distances.push( [q2, totalDistance] );
+            }
+        }
+
+        distances.sort( 
+            function(a,b) {
+                if (a[1] > b[1]) {
+                    return 1;
+                } else if (b[1] > a[1]) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            }
+        );
+
+        q1.neighbors = [];
+        for (i = 0; i < neighbors && i < distances.length; i++) {
+            q1.neighbors.push(distances[i]);
+        }
+    }
+}
+
+function seg_distance(seg1, seg2, field, weighted) {
+    if (weighted) {
+        return weighted_euclidean_distance(seg1[field], seg2[field]);
+    } else {
+        return euclidean_distance(seg1[field], seg2[field]);
+    }
+}
+
+
+function euclidean_distance(v1, v2) {
+    var sum = 0;
+
+    for (var i = 0; i < v1.length; i++) {
+        var delta = v2[i] - v1[i];
+        sum += delta * delta;
+    }
+    return Math.sqrt(sum);
+}
+
+function weighted_euclidean_distance(v1, v2) {
+    var sum = 0;
+
+    //for (var i = 0; i < 4; i++) {
+    for (var i = 0; i < v1.length; i++) {
+        var delta = v2[i] - v1[i];
+        //var weight = 1.0 / ( i + 1.0);
+        var weight = 1.0;
+        sum += delta * delta * weight;
+    }
+    return Math.sqrt(sum);
+}
+
+function highlightNeighbors(tile, highlight) {
+    for (var i = 0 ; i < tile.q.neighbors.length; i++) {
+        var neighbor = tile.q.neighbors[i];
+        var q = neighbor[0];
+        var d = neighbor[1];
+        if (tile.q.which === q.which) {
+             continue;
+        }
+        if (d < 80) {
+            if (highlight) {
+                q.tile.rect.attr("fill", "#FFF");
+                //q.tile.playStyle();
+            } else {
+                q.tile.normal();
+            }
+        }
+    }
+}
+
+var tilePrototype = {
+    normalColor:"#5f9",
+
+    move: function(x,y)  {
+        this.rect.attr( { x:x, y:y});
+        if (this.label) {
+            this.label.attr( { x:x + 2, y: y + 8});
+        }
+    },
+
+    play:function(force) {
+        if (force || shifted) {
+            this.playStyle();
+            player.play(this.q);
+        } else if (controlled) {
+            this.queueStyle();
+            player.queue(this.q);
+        } else {
+            this.selectStyle();
+        }
+        if (force) {
+            info("Selected tile " + this.q.which);
+            selectedTile = this;
+        }
+    },
+
+
+
+    selectStyle: function() {
+        this.rect.attr("fill", "#C9a");
+    },
+
+    queueStyle: function() {
+        this.rect.attr("fill", "#aFF");
+    },
+
+    pauseStyle: function() {
+        this.rect.attr("fill", "#F8F");
+    },
+
+    playStyle: function() {
+       // this.rect.attr("fill", "#FF9");
+        this.rect.attr("fill", "#8f8");
+    },
+
+    normal: function() {
+        this.rect.attr("fill", this.normalColor);
+    },
+
+    showImage : function(which) {
+         if (showImages && imagesLoaded) {
+             $("#movie-div").empty();
+             $("#movie-div").append(this.images[which]); 
+         }
+    },
+
+    init:function() {
+        var that = this;
+
+        this.rect.mouseover( function(event) {
+            event.preventDefault();
+            that.showImage(0);
+        });
+
+        this.rect.mousedown(function(event) { 
+            event.preventDefault();
+            driver.setNextTile(that);
+            // console.log(that.q.which);
+            for (var i = 0; i < that.q.neighbors.length; i++) {
+                var q = that.q.neighbors[i][0];
+                var d = that.q.neighbors[i][1];
+            }
+            if (!driver.isRunning()) {
+                driver.start();
+            } 
+            if (controlled) {
+                driver.setIncr(0);
+            }
+        });
+    }
+}
+
+function getQuantumColor(q) {
+    if (isSegment(q)) {
+        return getSegmentColor(q);
+    } else {
+        q = getQuantumSegment(q);
+        if (q != null) {
+            return getSegmentColor(q);
+        } else {
+            return "#000";
+        }
+    }
+}
+
+function getQuantumSegment(q) {
+    return q.oseg;
+}
+
+
+function isSegment(q) {
+    return 'timbre' in q;
+}
+
+function getBranchColor(q) {
+    if (q.neighbors.length == 0) {
+        return to_rgb(0, 0, 0);
+    } else {
+        var red = q.neighbors.length / MAX_BRANCHES;
+        var color = to_rgb(red, 0, (1. - red));
+        return color;
+    }
+}
+
+
+function createTile(which, q) {
+    var fixedWidth = true;
+    var labeled = false;
+    var tile = Object.create(tilePrototype);
+    tile.which = which;
+    tile.width = 16;
+    tile.height = 16;
+    tile.normalColor = getQuantumColor(q);
+    tile.branchColor = getBranchColor(q);
+    tile.normalColor = getBranchColor(q);
+
+    if (!fixedWidth) {
+        tile.width = Math.round(80 * q.duration);
+    }
+
+    tile.rect = paper.rect(0, 0, tile.width, tile.height);
+    tile.rect.attr("stroke", "#349");
+
+    tile.normal();
+
+    if (labeled) {
+        tile.rect.toFront();
+        tile.label = paper.text(0,0, q.which);
+        tile.label.attr("text-anchor", "start");
+        tile.label.attr("font-weight", "normal");
+        tile.label.attr("font-size", "10px");
+        tile.label.attr("stroke", "#fff");
+    }
+
+    tile.q = q;
+    tile.init();
+    q.tile = tile;
+    return tile;
+}
+
+function createTilePanel(which) {
+    removeAllTiles();
+    tiles = createTiles(which);
+    if (showImages) {
+        loadImages();
+    }
+    layout(tiles, W, H, false);
+}
+
+function normalizeColor() {
+    cmin = [100,100,100];
+    cmax = [-100,-100,-100];
+
+    var qlist = track.analysis.segments;
+    for (var i = 0; i < qlist.length; i++) {
+        for (var j = 0; j < 3; j++) {
+            var t = qlist[i].timbre[j];
+
+            if (t < cmin[j]) {
+                cmin[j] = t;
+            }
+            if (t > cmax[j]) {
+                cmax[j] = t;
+            }
+        }
+    }
+}
+
+function getSegmentColor(seg) {
+    var results = []
+    for (var i = 0; i < 3; i++) {
+        var t = seg.timbre[i];
+        var norm = (t - cmin[i]) / (cmax[i] - cmin[i]);
+        results[i] = norm * 255;
+        results[i] = norm;
+    }
+    return to_rgb(results[0], results[1], results[2]);
+}
+
+function convert(value) { 
+    var integer = Math.round(value);
+    var str = Number(integer).toString(16); 
+    return str.length == 1 ? "0" + str : str; 
+};
+
+function to_rgb(r, g, b) { 
+    return "#" + convert(r * 255) + convert(g * 255) + convert(b * 255); 
+}
+
+function removeAllTiles() {
+    for (var i =0; i < tiles.length; i++) {
+        tiles[i].rect.remove();
+    }
+    tiles = [];
+}
+
+function keydown(evt) {
+
+    if (evt.which == 39) {  // right arrow
+        var inc = driver.getIncr();
+        driver.setIncr(inc + 1);
+        evt.preventDefault();
+    }
+
+    if (evt.which == 37) {  // left arrow
+        evt.preventDefault();
+        var inc = driver.getIncr();
+        driver.setIncr(inc - 1);
+    }
+
+    if (evt.which ==38 ) {  // up arrow
+        driver.setIncr(1);
+        evt.preventDefault();
+    }
+
+    if (evt.which == 40  ) {  // down arrow
+        driver.setIncr(0);
+        evt.preventDefault();
+    }
+
+
+    if (evt.which == 17) {
+        controlled = true;
+    }
+
+    if (evt.which == 16) {
+        shifted = true;
+    }
+
+    if (evt.which == 32) {
+        evt.preventDefault();
+        if (driver.isRunning()) {
+            driver.stop();
+        } else {
+            driver.start();
+        }
+    }
+
+}
+
+function isDigit(key) {
+    return key >= 48 && key <= 57;
+}
+
+function keyup(evt) {
+    if (evt.which == 17) {
+        controlled = false;
+    }
+    if (evt.which == 16) {
+        shifted = false;
+    }
+}
+
+
+function redrawAll() {
+}
+
+
+function init() {
+    window.oncontextmenu = function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        return false;
+    };
+
+    document.ondblclick = function DoubleClick(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        return false;
+    }
+
+    psyImage = new Image();
+    psyImage.src = 'psy.png';
+
+    paper = Raphael("tiles", W, H);
+
+    $("#error").hide();
+    $(document).keydown(keydown);
+    $(document).keyup(keyup);
+    $("#infinite_mode").change( 
+        function() {
+            var selected = $('#infinite_mode').is(':checked');
+            if (selected) {
+                infiniteMode = true;
+            } else {
+                infiniteMode = false;
+            }
+        }
+    );
+
+    $("#image_mode").change( 
+        function() {
+            var selected = $('#image_mode').is(':checked');
+            if (selected) {
+                showImages = true;
+            } else {
+                showImages = false;
+                 $("#movie-div").empty();
+                 $("#movie-div").append(psyImage); 
+            }
+        }
+    );
+
+    $("#go").click(
+        function() {
+            if (driver.isRunning()) {
+                driver.stop();
+            } else {
+                driver.start();
+            }
+        }
+    );
+
+    if (window.AudioContext === undefined) {
+        error("Sorry, this app needs advanced web audio. Your browser doesn't"
+            + " support it. Try the latest version of Chrome");
+
+        $("#go").hide();
+
+    } else {
+        var context = new AudioContext();
+        remixer = createJRemixer(context, apiKey, $);
+        player = remixer.getPlayer();
+
+        info("Loading track ...");
+        /*remixer.fetchAnalyzedTrack(trackID, track_url, function(t) {*/
+        remixer.fetchAnalyzedTrack(TRLRVJF13A79B07430, track_url, function(t) {
+            track = t;
+            if (t.status === 'ok') {
+                info("ready!");
+                normalizeColor();
+                calculateNearestNeighbors('beats', MAX_BRANCHES, branchThreshold);
+                goBeats();
+                driver = Driver(player)
+            } else {
+                info(t.status);
+            }
+        });
+    }
+}
+
+
+
+function Driver(player) {
+    var curTile = null;
+    var curOp = null;
+    var incr = 1;
+    var nextTile = null;
+    var bounceSeed = null;
+    var bounceCount = 0;
+
+    var beatDiv = $("#beats");
+    var timeDiv = $("#time");
+
+    var verses = [31, 147, 211, 320, 391];
+
+    function next() {
+        if (curTile == null || curTile == undefined) {
+            return tiles[0];
+        } else {
+            var nextIndex;
+            if (shifted) {
+                if (bounceSeed === null) {
+                    bounceSeed = curTile;
+                    bounceCount = 0;
+                }
+
+                if (bounceCount++ % 2 === 1) {
+                    return selectNextNeighbor(bounceSeed);
+                } else {
+                    return bounceSeed;
+                }
+            } if (controlled) {
+                // hang out on the seed
+                return curTile;
+            } else {
+                if (bounceSeed != null) {
+                    var nextTile = bounceSeed;
+                    bounceSeed = null;
+                    return nextTile;
+                } else {
+                    nextIndex = curTile.which + incr
+                }
+            }
+
+            if (infiniteMode && nextIndex >= 463) {
+                var nextIndex = verses.shift();
+                verses.push(nextIndex);
+            } 
+
+            if (nextIndex < 0 || nextIndex >= tiles.length) {
+                return curTile;
+            } else {
+                return selectRandomNextTile(tiles[nextIndex]);
+            }
+        }
+    }
+
+    function selectRandomNextTile(seed) {
+        if (seed.q.neighbors.length == 0) {
+            return seed;
+        } else if (shouldRandomBranch()) {
+            var next = seed.q.neighbors.shift();
+            seed.q.neighbors.push(next);
+            var tile = next[0].tile;
+            return tile;
+        } else {
+            return seed;
+        }
+    }
+
+    function selectNextNeighbor(seed) {
+        if (seed.q.neighbors.length == 0) {
+            return seed;
+        } else {
+            var next = seed.q.neighbors.shift();
+            seed.q.neighbors.push(next);
+            var tile = next[0].tile;
+            return tile;
+        } 
+    }
+
+    function shouldRandomBranch() {
+        if (infiniteMode) {
+            curRandomBranchChance += randomBranchChanceDelta;
+            if (curRandomBranchChance > maxRandomBranchChance) {
+                curRandomBranchChance = maxRandomBranchChance;
+            }
+            var shouldBranch = Math.random() < curRandomBranchChance;
+            // console.log(curRandomBranchChance, shouldBranch);
+            if (shouldBranch) {
+                curRandomBranchChance = minRandomBranchChance;
+            }
+            return shouldBranch;
+        } else {
+            return false;
+        }
+    }
+
+    function showNextImage(tile, which) {
+        tile.showImage(which);
+        if (which < tile.images.length - 1) {
+            setTimeout(     
+                function () { 
+                    showNextImage(tile, which + 1); 
+                }, 1000 * tile.q.duration / tile.images.length);
+        }
+    }
+
+    function showListenTime(delta) {
+        var secs = delta / 1000;
+        var hours = Math.floor(secs / 3600);
+        secs -= hours * 3600;
+        var mins = Math.floor(secs / 60);
+        secs -= mins * 60;
+
+        secs = Math.floor(secs);
+
+        if (hours > 0) {
+            info("Woah!, you just listened for " + hours + " hours, " + mins + " minutes, and " + secs + " seconds");
+        } else if (mins > 0) {
+            info("Hey! You just listened for " + mins + " minutes, and " + secs + " seconds");
+        } else {
+            info("Lightweight! You only listened for " + secs + " seconds");
+        }
+    }
+
+    function updateStats() {
+        var now = new Date().getTime();
+        beatDiv.text(totalBeats);
+        timeDiv.text(secondsToTime((now - startTime) / 1000.));
+    }
+
+
+    function process() {
+        if (curTile !== null && curTile !== undefined) {
+            curTile.normal();
+        }
+
+        if (curOp) {
+            if (nextTile != null) {
+                curTile = nextTile;
+                nextTile = null;
+            } else {
+                curTile = curOp();
+            }
+
+            if (curTile !== null) {
+                player.play(curTile.q);
+                showNextImage(curTile, 0);
+                setTimeout( function () { process(); }, 1000 * curTile.q.duration);
+                curTile.playStyle();
+                totalBeats += 1;
+                updateStats();
+            }
+        } else {
+            if (curTile != null) {
+                curTile.normal();
+            }
+        }
+    }
+
+    var startTime = 0;
+    var interface = {
+        start: function() {
+            totalBeats = 0;
+            bounceSeed = null;
+            curOp = next;
+            startTime = new Date().getTime();
+            $("#go").text('Make it stop, please!');
+            info("");
+            process();
+        },
+
+        stop: function() {
+            var delta = new Date().getTime() - startTime;
+            $("#go").text('Play Infinite Gangnam Style');
+            curOp = null;
+            curTile = null;
+            bounceSeed = null;
+            incr = 1;
+        },
+
+        isRunning: function() {
+            return curOp !== null;
+        },
+
+        getIncr: function() {
+            return incr;
+        },
+
+        getCurTile : function() {
+            return curTile;
+        },
+
+        setIncr: function(inc) {
+            incr = inc;
+        }, 
+
+        setNextTile: function(tile) {
+            nextTile = tile;
+        },
+    }
+    return interface;
+}
+
+function secondsToTime(secs) {
+    secs = Math.floor(secs);
+    var hours = Math.floor(secs / 3600);
+    secs -= hours * 3600;
+    var mins = Math.floor(secs/60);
+    secs -= mins * 60;
+
+    if (hours < 10) {
+        hours = '0' + hours;
+    }
+    if (mins < 10) {
+        mins = '0' + mins;
+    }
+    if (secs < 10) {
+        secs = '0' + secs;
+    }
+    return hours + ":" + mins + ":" + secs
+}
+
+function getVisibileWindowDims() {
+    var viewportHeight = window.innerHeight ? window.innerHeight : $(window).height();
+    var viewportWidth = window.innerWidth ? window.innerWidth : $(window).width();
+    W = viewportWidth - margin * 2;
+    H = viewportHeight - margin * 2 ;
+}
+
+
+window.onload = init;
+
+</script>
+
