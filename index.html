@@ -648,14 +648,14 @@ function init() {
         }
     );
 
-    if (window.AudioContext === undefined) {
+    if (typeof webkitAudioContext === "undefined" && window.AudioContext === undefined) {
         error("Sorry, this app needs advanced web audio. Your browser doesn't"
             + " support it. Try the latest version of Chrome");
 
         $("#go").hide();
 
     } else {
-        var context = new AudioContext();
+        var context = typeof webkitAudioContext === "undefined" ? new AudioContext() : new webkitAudioContext();
         remixer = createJRemixer(context, apiKey, $);
         player = remixer.getPlayer();
 

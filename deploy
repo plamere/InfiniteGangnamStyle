@@ -1,2 +1,2 @@
-rsync -azv . --exclude .git plamere@playlistmachinery.com:/home/www/infinitegangnamstyle
+rsync -azv . --exclude .git --exclude archive plamere@playlistmachinery.com:/home/www/infinitegangnamstyle
 
